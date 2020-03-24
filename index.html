@@ -43,12 +43,20 @@
       let degrees = [];
       const table = document.getElementById("data-table");
       const degree_selector = document.getElementById("degree-selector");
+      const head_title = document.getElementById('title')
+      const form = document.getElementById("sorting-form");
+      let sorting = true;
+      
+      let sorted_object_data = [...sortData(data_object)]
+      let rev_object_data =[...sorted_object_data].reverse()
+console.log(rev_object_data);
+
+
+      
       data_object.forEach(data => {
         
         degrees.push(data.degree);
       });
-      console.log(data_object);
-
       degrees = degrees.filter(function(item, index, inputArray) {
         return inputArray.indexOf(item) == index;
       });
@@ -60,18 +68,27 @@
       });
       console.log(degrees);
 
-      data_object.forEach(data => {
+      sortData(data_object).forEach(data => {
         generateHtml(data);
       });
       let select_result = [...data_object];
-      const form = document.getElementById("sorting-form");
+      
       form.degree.addEventListener("input", e => {
         const selected = e.target.value;
         table.innerHTML=''
         select_result = [];
+        console.log(sorting);
+        
+        if(sorting){
+          data_object= [...sorted_object_data]
+        }else{
+          data_object= [...sorted_object_data].reverse()
+        }
+        
+        
         data_object.forEach(data => {
-          var patt = new RegExp(`^(${form.search.value})`, "gi");
-          var result = data.title.match(patt);
+          const result = regexFilter(data)
+
           if (result && e.target.value === "All") {
             generateHtml(data);
             select_result = [...data_object];
@@ -85,6 +102,7 @@
 
             return;
           }
+          
         });
       });
 
@@ -92,6 +110,7 @@
         const input_value = e.target.value;
         console.log(select_result);
         table.innerHTML=''
+        
         select_result.forEach(data => {
           e.preventDefault();
 
@@ -106,10 +125,47 @@
           }
         });
       });
+      
+      head_title.addEventListener('click',()=>{
+        let sorted_data 
+        if(sorting){
+          sorted_data = sortData(select_result).reverse()
+          table.innerHTML=''
+          sorted_data.forEach(data=>{
+            const result = regexFilter(data)
 
+          if (result) {
+            generateHtml(data);
+            return;
+          }
+          })
+          sorting = !sorting
+        }else{
+          sorted_data = sortData(select_result)
+          table.innerHTML=''
+          sorted_data.forEach(data=>{
+          const result = regexFilter(data)
+          if (result) {
+            generateHtml(data);
+            return;
+          }
+          })
+          sorting = !sorting
+        }
+        
+      })
       function sortData(data) {
-        data.sort(data.title);
+        data.sort(function(a,b) {return (a.title > b.title) ? 1 : ((b.title > a.title) ? -1 : 0);} );
         return data;
+      }
+      function sortDataReverse(data) {
+        data.sort(function(a,b) {return (a.title > b.title) ? -1 : ((b.title > a.title) ? 1 : 0);} );
+        return data;
+      }
+
+      function regexFilter(data){
+        var patt = new RegExp(`^(${form.search.value})`, "gi");
+        return result = data.title.match(patt);
       }
 
       function generateHtml(data) {
