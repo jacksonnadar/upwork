@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="data.js"></script>
+    <title>Table</title>
+  </head>
+  <body>
+    <form id="sorting-form">
+      <label for="degree">Degree: </label>
+      <select name="degree" id="degree-selector"
+        ><option>All</option></select
+      >
+      <input
+        autocomplete="off"
+        name="search"
+        type="text"
+        id="search"
+        placeholder="Search"
+      />
+    </form>
+
+    <div class="table">
+      <table >
+        <thead>
+          <tr>
+            <th id="title">Title</th>
+            <th id="location">Location</th>
+            <th id="degree">Degree</th>
+          </tr>
+          <tbody id="data-table" ></tbody>
+        </thead>
+      </table>
+    </div>
+    <style>
+      tr td img {
+        width: 30px;
+      }
+    </style>
+    <script>
+
+      let degrees = [];
+      const table = document.getElementById("data-table");
+      const degree_selector = document.getElementById("degree-selector");
+      data_object.forEach(data => {
+        
+        degrees.push(data.degree);
+      });
+      console.log(data_object);
+
+      degrees = degrees.filter(function(item, index, inputArray) {
+        return inputArray.indexOf(item) == index;
+      });
+      degrees.forEach(deg => {
+        const option = document.createElement("option");
+        option.innerHTML = deg;
+        option.setAttribute("value", deg);
+        degree_selector.append(option);
+      });
+      console.log(degrees);
+
+      data_object.forEach(data => {
+        generateHtml(data);
+      });
+      let select_result = [...data_object];
+      const form = document.getElementById("sorting-form");
+      form.degree.addEventListener("input", e => {
+        const selected = e.target.value;
+        table.innerHTML=''
+        select_result = [];
+        data_object.forEach(data => {
+          var patt = new RegExp(`^(${form.search.value})`, "gi");
+          var result = data.title.match(patt);
+          if (result && e.target.value === "All") {
+            generateHtml(data);
+            select_result = [...data_object];
+            return;
+          }
+          if (data.degree === e.target.value) {
+            select_result.push(data);
+          }
+          if (result && data.degree === e.target.value) {
+            generateHtml(data);
+
+            return;
+          }
+        });
+      });
+
+      form.search.addEventListener("input", e => {
+        const input_value = e.target.value;
+        console.log(select_result);
+        table.innerHTML=''
+        select_result.forEach(data => {
+          e.preventDefault();
+
+          var patt = new RegExp(`^(${input_value})`, "gi");
+          var result = data.title.match(patt);
+          if (result && form.degree.value === "All") {
+            generateHtml(data);
+            return;
+          }
+          if (result) {
+            generateHtml(data);
+          }
+        });
+      });
+
+      function sortData(data) {
+        data.sort(data.title);
+        return data;
+      }
+
+      function generateHtml(data) {
+        let location;
+        const row = document.createElement("tr");
+        if (data.location === "On Campus") {
+          location = `<td><img src = "https://spp.franciscan.edu/wp-content/uploads/sites/4/2019/11/Campus.png"></td>`;
+        } else if (data.location === "Online") {
+          location = `<td><img src = "https://spp.franciscan.edu/wp-content/uploads/sites/4/2019/11/On-line.png"></td>`;
+        } else {
+          location = `<td><img src = "https://spp.franciscan.edu/wp-content/uploads/sites/4/2019/11/Campus.png"><img src = "https://spp.franciscan.edu/wp-content/uploads/sites/4/2019/11/On-line.png"></td>`;
+        }
+        row.innerHTML = `<td>${data.title}</td>${location}<td>${data.degree}</td>`;
+        table.append(row);
+      }
+    </script>
+  </body>
+</html>
